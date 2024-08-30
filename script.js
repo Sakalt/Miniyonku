@@ -88,9 +88,15 @@ function drawScene() {
 
 // ミニ四駆を描画
 function drawMini4WD(x, y, material) {
-  ctx.fillStyle = "red"; // 車体の色
-  ctx.fillRect(x, y, 50, 30);
+  // 車体の長方形（細長い）
+  ctx.fillStyle = "blue"; // 車体の色
+  ctx.fillRect(x, y, 60, 30); // 車体
 
+  // 電池部分（細長い長方形の上）
+  ctx.fillStyle = "gray";
+  ctx.fillRect(x + 10, y - 10, 40, 10); // 電池部分
+  
+  // タイヤを描画
   drawTires(x, y, material);
 }
 
@@ -102,11 +108,22 @@ function drawTires(x, y, material) {
     hard: "#333333",
     void: "#ff69b4"
   };
+
+  const wheelColors = {
+    standard: "#666666",
+    custom: "#000000"
+  };
   
+  ctx.fillStyle = wheelColors[tireSettings.wheel];
+  ctx.beginPath();
+  ctx.arc(x + 10, y + 30, 10, 0, 2 * Math.PI); // 前輪のホイール
+  ctx.arc(x + 50, y + 30, 10, 0, 2 * Math.PI); // 後輪のホイール
+  ctx.fill();
+
   ctx.fillStyle = tireColors[material];
   ctx.beginPath();
-  ctx.arc(x + 10, y + 30, 10, 0, 2 * Math.PI); // 前輪
-  ctx.arc(x + 40, y + 30, 10, 0, 2 * Math.PI); // 後輪
+  ctx.arc(x + 10, y + 30, 8, 0, 2 * Math.PI); // 前輪のタイヤ
+  ctx.arc(x + 50, y + 30, 8, 0, 2 * Math.PI); // 後輪のタイヤ
   ctx.fill();
 }
 
