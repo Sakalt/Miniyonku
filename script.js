@@ -4,6 +4,15 @@ let raceStarted = false;
 let backgroundPosition = 0;
 let tireSettings = JSON.parse(localStorage.getItem("tireSettings")) || { material: "hiepita", wheel: "standard" };
 let tireDurability = 100; // タイヤの耐久度（100が最大）
+let boosting = false; // 走る状態
+
+// プレイヤーの設定
+const playerCar = {
+  x: 100,
+  y: 350,
+  speed: 0,
+  material: tireSettings.material
+};
 
 // CPUの設定
 const cpuCars = [
@@ -19,6 +28,7 @@ function applyCustomization() {
   tireSettings = { material: tireMaterial, wheel: wheelType };
   localStorage.setItem("tireSettings", JSON.stringify(tireSettings));
   alert(`タイヤ: ${tireMaterial}, ホイール: ${wheelType} を設定しました`);
+  playerCar.material = tireMaterial; // プレイヤーのミニ四駆に適用
 }
 
 // レースの開始
@@ -29,16 +39,35 @@ function startRace() {
   }
 }
 
+// 走るボタンのトグル
+function toggleBoost() {
+  boosting = !boosting;
+  document.querySelector('button[onclick="toggleBoost()"]').textContent = boosting ? "走る停止" : "走る";
+}
+
 // レースの更新
 function updateRace() {
   if (raceStarted) {
     // 背景をスクロール
     backgroundPosition -= getTireSpeed(tireSettings.material);
     canvas.style.backgroundPosition = `${backgroundPosition}px 0`;
+    
+    // プレイヤーとCPUのミニ四駆を更新
+    updatePlayerCar();
     updateCpuCars();
+    
     drawScene();
     requestAnimationFrame(updateRace);
   }
+}
+
+// プレイヤーのミニ四駆を更新
+function updatePlayerCar() {
+  playerCar.speed = getTireSpeed(playerCar.material);
+  if (boosting) {
+    playerCar.speed *= 1.5; // 走る状態の加速
+  }
+  playerCar.x += playerCar.speed;
 }
 
 // シーンを描画
@@ -46,7 +75,7 @@ function drawScene() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
   // 自分のミニ四駆を描画
-  drawMini4WD(100, 350, tireSettings.material);
+  drawMini4WD(playerCar.x, playerCar.y, tireSettings.material);
 
   // CPUミニ四駆を描画
   cpuCars.forEach(cpu => {
@@ -88,16 +117,19 @@ function updateCpuCars() {
 
 // タイヤ素材による速度変動
 function getTireSpeed(material) {
-  const speeds = {
+  const baseSpeeds = {
     hiepita: 3,
     ice: 6,
     hard: 4,
     void: 2
   };
   
-  const randomFactor = Math.random() * 0.5 - 0.25; // ランダム変動
-  let speed = speeds[material] + randomFactor;
+  let speed = baseSpeeds[material];
   
+  const randomFactor = Math.random() * 0.5 - 0.25; // ランダム変動
+  speed += randomFactor;
+  
+  // タイヤの耐久度管理（氷の場合）
   if (material === 'ice') {
     tireDurability -= 0.5; // 氷は早く摩耗
     if (tireDurability <= 0) {
