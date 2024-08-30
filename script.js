@@ -5,6 +5,13 @@ let backgroundPosition = 0;
 let tireSettings = JSON.parse(localStorage.getItem("tireSettings")) || { material: "hiepita", wheel: "standard" };
 let tireDurability = 100; // タイヤの耐久度（100が最大）
 
+// CPUの設定
+const cpuCars = [
+  { x: 100, y: 50, speed: 0, material: "hiepita" },
+  { x: 100, y: 150, speed: 0, material: "ice" },
+  { x: 100, y: 250, speed: 0, material: "hard" }
+];
+
 // タイヤの特性とホイール設定を適用する
 function applyCustomization() {
   const tireMaterial = document.getElementById('tire-select').value;
@@ -28,25 +35,35 @@ function updateRace() {
     // 背景をスクロール
     backgroundPosition -= getTireSpeed(tireSettings.material);
     canvas.style.backgroundPosition = `${backgroundPosition}px 0`;
-    drawMini4WD();
+    updateCpuCars();
+    drawScene();
     requestAnimationFrame(updateRace);
   }
 }
 
-// ミニ四駆を描画
-function drawMini4WD() {
+// シーンを描画
+function drawScene() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // ミニ四駆の車体
-  ctx.fillStyle = "red";
-  ctx.fillRect(100, 200, 50, 30);
+  // 自分のミニ四駆を描画
+  drawMini4WD(100, 350, tireSettings.material);
 
-  // タイヤを描画
-  drawTires(tireSettings.material);
+  // CPUミニ四駆を描画
+  cpuCars.forEach(cpu => {
+    drawMini4WD(cpu.x, cpu.y, cpu.material);
+  });
+}
+
+// ミニ四駆を描画
+function drawMini4WD(x, y, material) {
+  ctx.fillStyle = "red";
+  ctx.fillRect(x, y, 50, 30);
+
+  drawTires(x, y, material);
 }
 
 // タイヤを描画する関数
-function drawTires(material) {
+function drawTires(x, y, material) {
   const tireColors = {
     hiepita: "#a4c2f4",
     ice: "#add8e6",
@@ -56,9 +73,17 @@ function drawTires(material) {
   
   ctx.fillStyle = tireColors[material];
   ctx.beginPath();
-  ctx.arc(110, 230, 10, 0, 2 * Math.PI); // 前輪
-  ctx.arc(140, 230, 10, 0, 2 * Math.PI); // 後輪
+  ctx.arc(x + 10, y + 30, 10, 0, 2 * Math.PI); // 前輪
+  ctx.arc(x + 40, y + 30, 10, 0, 2 * Math.PI); // 後輪
   ctx.fill();
+}
+
+// CPUの速度を更新
+function updateCpuCars() {
+  cpuCars.forEach(cpu => {
+    cpu.speed = getTireSpeed(cpu.material);
+    cpu.x += cpu.speed;
+  });
 }
 
 // タイヤ素材による速度変動
