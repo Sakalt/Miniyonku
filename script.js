@@ -35,6 +35,9 @@ function applyCustomization() {
 function startRace() {
   if (!raceStarted) {
     raceStarted = true;
+    backgroundPosition = 0; // 背景の位置リセット
+    playerCar.x = 100; // プレイヤーのミニ四駆位置リセット
+    cpuCars.forEach(cpu => cpu.x = 100); // CPUのミニ四駆位置リセット
     requestAnimationFrame(updateRace);
   }
 }
@@ -85,7 +88,7 @@ function drawScene() {
 
 // ミニ四駆を描画
 function drawMini4WD(x, y, material) {
-  ctx.fillStyle = "red";
+  ctx.fillStyle = "red"; // 車体の色
   ctx.fillRect(x, y, 50, 30);
 
   drawTires(x, y, material);
