@@ -1,49 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ミニ四駆レース</title>
+    <title>ミニ四駆レースゲーム</title>
     <style>
-        #race-canvas {
-            width: 800px;
-            height: 400px;
-            border: 1px solid black;
-            background-image: url('race-track.png');
-            background-repeat: repeat-x;
-            background-size: cover;
-            overflow: hidden;
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            border: 1px solid #000;
+            background-color: #fff;
+            display: block;
+            margin: 20px auto;
         }
         .controls {
-            margin-top: 10px;
+            margin-top: 20px;
+        }
+        .control-button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        select {
+            font-size: 16px;
+            padding: 5px;
         }
     </style>
 </head>
 <body>
-    <canvas id="race-canvas"></canvas>
-    
+    <h1>ミニ四駆レースゲーム</h1>
+    <canvas id="race-canvas" width="800" height="400"></canvas>
     <div class="controls">
-        <button onclick="startRace()">レース開始</button>
-        <button onclick="toggleBoost()">走る</button>
-        <button onclick="refillTires()">タイヤ補充</button>
-        
-        <label for="tire-select">タイヤ:</label>
-        <select id="tire-select">
-            <option value="hiepita">冷えピタ</option>
-            <option value="ice">氷</option>
-            <option value="hard">ハード</option>
-            <option value="void">ヴォイド</option>
-        </select>
-        
-        <label for="wheel-select">ホイール:</label>
-        <select id="wheel-select">
-            <option value="standard">標準</option>
-            <option value="custom">カスタム</option>
-        </select>
-        
-        <button onclick="applyCustomization()">カスタマイズ適用</button>
+        <button class="control-button" onclick="startRace()">レース開始</button>
+        <button class="control-button" onclick="toggleBoost()">走る</button>
+        <button class="control-button" onclick="refillTires()">タイヤ補充</button>
+        <button class="control-button" onclick="changeView()">視点切り替え</button>
+        <div>
+            <label for="tire-select">タイヤ素材:</label>
+            <select id="tire-select">
+                <option value="hiepita">冷えピタ</option>
+                <option value="ice">氷</option>
+                <option value="hard">ハード</option>
+                <option value="void">ヴォイド</option>
+            </select>
+            <label for="wheel-select">ホイール:</label>
+            <select id="wheel-select">
+                <option value="standard">標準</option>
+                <option value="custom">カスタム</option>
+            </select>
+            <button class="control-button" onclick="applyCustomization()">カスタマイズ適用</button>
+        </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
