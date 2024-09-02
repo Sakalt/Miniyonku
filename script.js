@@ -5,6 +5,7 @@ let backgroundPosition = 0;
 let tireSettings = JSON.parse(localStorage.getItem("tireSettings")) || { material: "hiepita", wheel: "standard" };
 let tireDurability = 100; // タイヤの耐久度（100が最大）
 let boosting = false; // 走る状態
+let viewAngle = 0; // 現在の視点
 
 // プレイヤーの設定
 const playerCar = {
@@ -48,6 +49,12 @@ function toggleBoost() {
   document.querySelector('button[onclick="toggleBoost()"]').textContent = boosting ? "走る停止" : "走る";
 }
 
+// 視点の切り替え
+function changeView() {
+  viewAngle = (viewAngle + 1) % 4; // 0, 1, 2, 3 の視点を循環
+  drawScene();
+}
+
 // レースの更新
 function updateRace() {
   if (raceStarted) {
@@ -77,6 +84,29 @@ function updatePlayerCar() {
 function drawScene() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
+  // 選択された視点に応じて描画
+  switch (viewAngle) {
+    case 0:
+      // 上からの視点
+      drawTopView();
+      break;
+    case 1:
+      // 正面からの視点
+      drawFrontView();
+      break;
+    case 2:
+      // 側面からの視点
+      drawSideView();
+      break;
+    case 3:
+      // 後ろからの視点
+      drawRearView();
+      break;
+  }
+}
+
+// ミニ四駆を描画（上からの視点）
+function drawTopView() {
   // 自分のミニ四駆を描画
   drawMini4WD(playerCar.x, playerCar.y, tireSettings.material);
 
@@ -86,18 +116,72 @@ function drawScene() {
   });
 }
 
+// ミニ四駆を描画（正面からの視点）
+function drawFrontView() {
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(Math.PI);
+  ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+  // 自分のミニ四駆を描画
+  drawMini4WD(playerCar.x, playerCar.y, tireSettings.material);
+
+  // CPUミニ四駆を描画
+  cpuCars.forEach(cpu => {
+    drawMini4WD(cpu.x, cpu.y, cpu.material);
+  });
+
+  ctx.restore();
+}
+
+// ミニ四駆を描画（側面からの視点）
+function drawSideView() {
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+  // 自分のミニ四駆を描画
+  drawMini4WD(playerCar.x, playerCar.y, tireSettings.material);
+
+  // CPUミニ四駆を描画
+  cpuCars.forEach(cpu => {
+    drawMini4WD(cpu.x, cpu.y, cpu.material);
+  });
+
+  ctx.restore();
+}
+
+// ミニ四駆を描画（後ろからの視点）
+function drawRearView() {
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(Math.PI / 2);
+  ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+  // 自分のミニ四駆を描画
+  drawMini4WD(playerCar.x, playerCar.y, tireSettings.material);
+
+  // CPUミニ四駆を描画
+  cpuCars.forEach(cpu => {
+    drawMini4WD(cpu.x, cpu.y, cpu.material);
+  });
+
+  ctx.restore();
+}
+
 // ミニ四駆を描画
 function drawMini4WD(x, y, material) {
-  // 車体の長方形（細長い）
+  // 車体の長方形（タイヤと重なる位置）
   ctx.fillStyle = "blue"; // 車体の色
-  ctx.fillRect(x, y, 60, 30); // 車体
+  ctx.fillRect(x + 5, y + 10, 60, 20); // 車体（薄っぺらく）
 
-  // 電池部分（細長い長方形の上）
+  // 電池部分（車体の上に）
   ctx.fillStyle = "gray";
-  ctx.fillRect(x + 10, y - 10, 40, 10); // 電池部分
+  ctx.fillRect(x + 20, y, 30, 10); // 電池部分
   
   // タイヤを描画
-  drawTires(x, y, material);
+  drawTires(x + 5, y + 10, material);
 }
 
 // タイヤを描画する関数
@@ -113,17 +197,17 @@ function drawTires(x, y, material) {
     standard: "#666666",
     custom: "#000000"
   };
-  
+
   ctx.fillStyle = wheelColors[tireSettings.wheel];
   ctx.beginPath();
-  ctx.arc(x + 10, y + 30, 10, 0, 2 * Math.PI); // 前輪のホイール
-  ctx.arc(x + 50, y + 30, 10, 0, 2 * Math.PI); // 後輪のホイール
+  ctx.arc(x + 5, y + 20, 10, 0, 2 * Math.PI); // 前輪のホイール
+  ctx.arc(x + 55, y + 20, 10, 0, 2 * Math.PI); // 後輪のホイール
   ctx.fill();
 
   ctx.fillStyle = tireColors[material];
   ctx.beginPath();
-  ctx.arc(x + 10, y + 30, 8, 0, 2 * Math.PI); // 前輪のタイヤ
-  ctx.arc(x + 50, y + 30, 8, 0, 2 * Math.PI); // 後輪のタイヤ
+  ctx.arc(x + 5, y + 20, 8, 0, 2 * Math.PI); // 前輪のタイヤ
+  ctx.arc(x + 55, y + 20, 8, 0, 2 * Math.PI); // 後輪のタイヤ
   ctx.fill();
 }
 
