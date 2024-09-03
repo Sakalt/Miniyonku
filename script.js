@@ -190,7 +190,14 @@ function drawTires(x, y, material) {
     hiepita: "#a4c2f4",
     ice: "#add8e6",
     hard: "#333333",
-    void: "#ff69b4"
+    void: "#ff69b4",
+    spike: "#ff4500",
+    aero: "#00bfff",
+    offroad: "#006400",
+    grip: "#d3d3d3",
+    mystic: "#8a2be2",
+    wind: "#f4f4f4",
+    rain: "#4682b4"
   };
 
   const wheelColors = {
@@ -225,30 +232,25 @@ function getTireSpeed(material) {
     hiepita: 3,
     ice: 6,
     hard: 4,
-    void: 2
+    void: 2,
+    spike: 5,
+    aero: 4.5,
+    offroad: 3.5,
+    grip: 3.2,
+    mystic: 3,
+    wind: 8,
+    rain: 4
   };
-  
-  let speed = baseSpeeds[material];
-  
-  const randomFactor = Math.random() * 0.5 - 0.25; // ランダム変動
-  speed += randomFactor;
-  
-  // タイヤの耐久度管理（氷の場合）
-  if (material === 'ice') {
-    tireDurability -= 0.5; // 氷は早く摩耗
-    if (tireDurability <= 0) {
-      speed = 1; // タイヤが溶けた場合、速度低下
-    }
-  }
-  
-  return speed;
-}
 
-// タイヤ補充機能
-function refillTires() {
-  tireDurability = 100;
-  alert("タイヤを補充しました！");
+  return baseSpeeds[material] || 3; // デフォルトの速度
 }
 
 // 初期化
-applyCustomization();
+function init() {
+  document.getElementById('start-button').addEventListener('click', startRace);
+  document.getElementById('boost-button').addEventListener('click', toggleBoost);
+  document.getElementById('view-button').addEventListener('click', changeView);
+  document.getElementById('apply-button').addEventListener('click', applyCustomization);
+}
+
+init();
