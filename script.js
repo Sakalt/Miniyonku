@@ -19,7 +19,8 @@ const playerCar = {
 const cpuCars = [
   { x: 100, y: 50, speed: 0, material: "hiepita" },
   { x: 100, y: 150, speed: 0, material: "ice" },
-  { x: 100, y: 250, speed: 0, material: "hard" }
+  { x: 100, y: 250, speed: 0, material: "hard" },
+  { x: 100, y: 350, speed: 0, material: "wind" } // 新しいタイヤタイプ
 ];
 
 // タイヤの特性とホイール設定を適用する
@@ -78,6 +79,47 @@ function updatePlayerCar() {
     playerCar.speed *= 1.5; // 走る状態の加速
   }
   playerCar.x += playerCar.speed;
+  
+  // タイヤの耐久度管理（プレイヤー用）
+  if (playerCar.material === 'ice') {
+    tireDurability -= 0.5; // 氷は早く摩耗
+    if (tireDurability <= 0) {
+      playerCar.speed = 1; // タイヤが溶けた場合、速度低下
+    }
+  }
+}
+
+// CPUのミニ四駆を更新
+function updateCpuCars() {
+  cpuCars.forEach(cpu => {
+    cpu.speed = getTireSpeed(cpu.material);
+    cpu.x += cpu.speed;
+  });
+}
+
+// タイヤの速度を取得
+function getTireSpeed(material) {
+  const baseSpeeds = {
+    hiepita: 3,
+    ice: 6,
+    hard: 4,
+    void: 2,
+    spike: 5,
+    aero: 4.5,
+    offroad: 3.5,
+    grip: 3.2,
+    mystic: 3,
+    rain: 4,
+    wind: 7 // 新しいタイヤタイプ
+  };
+
+  let speed = baseSpeeds[material] || 3; // デフォルトの速度
+  
+  // ランダム変動
+  const randomFactor = Math.random() * 0.5 - 0.25;
+  speed += randomFactor;
+  
+  return speed;
 }
 
 // シーンを描画
@@ -189,60 +231,27 @@ function drawTires(x, y, material) {
   const tireColors = {
     hiepita: "#a4c2f4",
     ice: "#add8e6",
-    hard: "#333333",
-    void: "#ff69b4",
+    hard: "#d3d3d3",
+    void: "#000000",
     spike: "#ff4500",
-    aero: "#00bfff",
-    offroad: "#006400",
-    grip: "#d3d3d3",
-    mystic: "#8a2be2",
-    wind: "#f4f4f4",
-    rain: "#4682b4"
+    aero: "#87ceeb",
+    offroad: "#9acd32",
+    grip: "#ff6347",
+    mystic: "#dda0dd",
+    rain: "#87cefa",
+    wind: "#00ff00" // 新しいタイヤタイプの色
   };
 
-  const wheelColors = {
-    standard: "#666666",
-    custom: "#000000"
-  };
-
-  ctx.fillStyle = wheelColors[tireSettings.wheel];
+  ctx.fillStyle = tireColors[material] || "#000000";
+  
+  // タイヤを描画
   ctx.beginPath();
-  ctx.arc(x + 5, y + 20, 10, 0, 2 * Math.PI); // 前輪のホイール
-  ctx.arc(x + 55, y + 20, 10, 0, 2 * Math.PI); // 後輪のホイール
+  ctx.arc(x + 10, y + 15, 8, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = tireColors[material];
   ctx.beginPath();
-  ctx.arc(x + 5, y + 20, 8, 0, 2 * Math.PI); // 前輪のタイヤ
-  ctx.arc(x + 55, y + 20, 8, 0, 2 * Math.PI); // 後輪のタイヤ
+  ctx.arc(x + 50, y + 15, 8, 0, Math.PI * 2);
   ctx.fill();
-}
-
-// CPUの速度を更新
-function updateCpuCars() {
-  cpuCars.forEach(cpu => {
-    cpu.speed = getTireSpeed(cpu.material);
-    cpu.x += cpu.speed;
-  });
-}
-
-// タイヤ素材による速度変動
-function getTireSpeed(material) {
-  const baseSpeeds = {
-    hiepita: 3,
-    ice: 6,
-    hard: 4,
-    void: 2,
-    spike: 5,
-    aero: 4.5,
-    offroad: 3.5,
-    grip: 3.2,
-    mystic: 3,
-    wind: 8,
-    rain: 4
-  };
-
-  return baseSpeeds[material] || 3; // デフォルトの速度
 }
 
 // 初期化
