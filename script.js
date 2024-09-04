@@ -27,28 +27,10 @@ const cpuCars = [
 function applyCustomization() {
   const tireMaterial = document.getElementById('tire-select').value;
   const wheelType = document.getElementById('wheel-select').value;
-  
-  const target = prompt("タイヤを変更する対象（プレイヤーまたはCPU0〜3）を指定してください:");
-
-  if (target === 'プレイヤー') {
-    tireSettings.material = tireMaterial;
-    playerCar.material = tireMaterial; // プレイヤーのミニ四駆に適用
-  } else if (target.startsWith('CPU')) {
-    const cpuIndex = parseInt(target.substring(3));
-    if (cpuIndex >= 0 && cpuIndex < cpuCars.length) {
-      cpuCars[cpuIndex].material = tireMaterial; // 指定したCPUのミニ四駆に適用
-    } else {
-      alert("無効なCPUインデックスです");
-      return;
-    }
-  } else {
-    alert("無効な対象です");
-    return;
-  }
-
-  tireSettings.wheel = wheelType;
+  tireSettings = { material: tireMaterial, wheel: wheelType };
   localStorage.setItem("tireSettings", JSON.stringify(tireSettings));
   alert(`タイヤ: ${tireMaterial}, ホイール: ${wheelType} を設定しました`);
+  playerCar.material = tireMaterial; // プレイヤーのミニ四駆に適用
 }
 
 // レースの開始
@@ -104,10 +86,11 @@ function updatePlayerCar() {
     if (tireDurability <= 0) {
       playerCar.speed = 1; // タイヤが溶けた場合、速度低下
     }
-  } else if (playerCar.material === 'wind') {
-    tireDurability -= 0.4; // windタイヤも摩耗する
+  }
+  if (playerCar.material === 'wind') {
+    tireDurability -= 0.8; // 「wind」は速く摩耗
     if (tireDurability <= 0) {
-      playerCar.speed = 2; // タイヤの摩耗で速度低下
+      playerCar.speed = 1; // タイヤが消耗した場合、速度低下
     }
   }
 }
@@ -239,69 +222,38 @@ function drawRearView() {
 function drawMini4WD(x, y, material) {
   // 車体の長方形（タイヤと重なる位置）
   ctx.fillStyle = "blue"; // 車体の色
-  ctx.fillRect(x, y, 50, 30);
+  ctx.fillRect(x + 5, y + 10, 60, 20); // 車体（薄っぺらく）
 
-  // タイヤの描画
-  drawTires(x, y, material);
+  // 電池部分（車体の上に）
+  ctx.fillStyle = "gray";
+  ctx.fillRect(x + 20, y, 30, 10); // 電池部分
+  
+  // タイヤを描画
+  drawTires(x + 5, y + 10, material);
 }
 
-// タイヤの描画
+// タイヤを描画する関数
 function drawTires(x, y, material) {
-  ctx.fillStyle = getTireColor(material);
-  ctx.beginPath();
-  ctx.arc(x + 10, y + 25, 10, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(x + 40, y + 25, 10, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-// タイヤの色を取得
-function getTireColor(material) {
-  const colors = {
+  const tireColors = {
     hiepita: "#a4c2f4",
     ice: "#add8e6",
     hard: "#d3d3d3",
     void: "#000000",
-    spike: "#ff4500",
-    aero: "#87ceeb",
-    offroad: "#9acd32",
-    grip: "#ff6347",
-    mystic: "#dda0dd",
-    rain: "#87cefa",
-    wind: "#00ff00" // 新しいタイヤの色
-    };
+    spike: "#ff0000",
+    aero: "#00ff00",
+    offroad: "#a0522d",
+    grip: "#ff69b4",
+    mystic: "#8a2be2",
+    rain: "#4682b4",
+    wind: "#f0f8ff" // 新しいタイヤタイプ
+  };
 
-  return colors[material] || "black";
+  const tireColor = tireColors[material] || "#000000";
+  
+  // タイヤの描画
+  ctx.fillStyle = tireColor;
+  ctx.beginPath();
+  ctx.arc(x + 10, y + 10, 10, 0, Math.PI * 2); // 左タイヤ
+  ctx.arc(x + 50, y + 10, 10, 0, Math.PI * 2); // 右タイヤ
+  ctx.fill();
 }
-
-// 初期設定
-function init() {
-  const tireSelect = document.getElementById('tire-select');
-  const wheelSelect = document.getElementById('wheel-select');
-
-  // タイヤの選択肢を追加
-  Object.keys(getTireColor()).forEach(material => {
-    const option = document.createElement('option');
-    option.value = material;
-    option.textContent = material;
-    tireSelect.appendChild(option);
-  });
-
-  // ホイールの選択肢を追加
-  ['standard', 'racing', 'offroad'].forEach(wheel => {
-    const option = document.createElement('option');
-    option.value = wheel;
-    option.textContent = wheel;
-    wheelSelect.appendChild(option);
-  });
-
-  document.getElementById('start-race').addEventListener('click', startRace);
-  document.getElementById('boost-toggle').addEventListener('click', toggleBoost);
-  document.getElementById('view-change').addEventListener('click', changeView);
-  document.getElementById('apply-customization').addEventListener('click', applyCustomization);
-}
-
-// 初期化
-init();
