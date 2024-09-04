@@ -27,10 +27,28 @@ const cpuCars = [
 function applyCustomization() {
   const tireMaterial = document.getElementById('tire-select').value;
   const wheelType = document.getElementById('wheel-select').value;
-  tireSettings = { material: tireMaterial, wheel: wheelType };
+  
+  const target = prompt("タイヤを変更する対象（プレイヤーまたはCPU0〜3）を指定してください:");
+
+  if (target === 'プレイヤー') {
+    tireSettings.material = tireMaterial;
+    playerCar.material = tireMaterial; // プレイヤーのミニ四駆に適用
+  } else if (target.startsWith('CPU')) {
+    const cpuIndex = parseInt(target.substring(3));
+    if (cpuIndex >= 0 && cpuIndex < cpuCars.length) {
+      cpuCars[cpuIndex].material = tireMaterial; // 指定したCPUのミニ四駆に適用
+    } else {
+      alert("無効なCPUインデックスです");
+      return;
+    }
+  } else {
+    alert("無効な対象です");
+    return;
+  }
+
+  tireSettings.wheel = wheelType;
   localStorage.setItem("tireSettings", JSON.stringify(tireSettings));
   alert(`タイヤ: ${tireMaterial}, ホイール: ${wheelType} を設定しました`);
-  playerCar.material = tireMaterial; // プレイヤーのミニ四駆に適用
 }
 
 // レースの開始
@@ -85,6 +103,11 @@ function updatePlayerCar() {
     tireDurability -= 0.5; // 氷は早く摩耗
     if (tireDurability <= 0) {
       playerCar.speed = 1; // タイヤが溶けた場合、速度低下
+    }
+  } else if (playerCar.material === 'wind') {
+    tireDurability -= 0.4; // windタイヤも摩耗する
+    if (tireDurability <= 0) {
+      playerCar.speed = 2; // タイヤの摩耗で速度低下
     }
   }
 }
@@ -216,19 +239,27 @@ function drawRearView() {
 function drawMini4WD(x, y, material) {
   // 車体の長方形（タイヤと重なる位置）
   ctx.fillStyle = "blue"; // 車体の色
-  ctx.fillRect(x + 5, y + 10, 60, 20); // 車体（薄っぺらく）
+  ctx.fillRect(x, y, 50, 30);
 
-  // 電池部分（車体の上に）
-  ctx.fillStyle = "gray";
-  ctx.fillRect(x + 20, y, 30, 10); // 電池部分
-  
-  // タイヤを描画
-  drawTires(x + 5, y + 10, material);
+  // タイヤの描画
+  drawTires(x, y, material);
 }
 
-// タイヤを描画する関数
+// タイヤの描画
 function drawTires(x, y, material) {
-  const tireColors = {
+  ctx.fillStyle = getTireColor(material);
+  ctx.beginPath();
+  ctx.arc(x + 10, y + 25, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x + 40, y + 25, 10, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// タイヤの色を取得
+function getTireColor(material) {
+  const colors = {
     hiepita: "#a4c2f4",
     ice: "#add8e6",
     hard: "#d3d3d3",
@@ -239,27 +270,38 @@ function drawTires(x, y, material) {
     grip: "#ff6347",
     mystic: "#dda0dd",
     rain: "#87cefa",
-    wind: "#00ff00" // 新しいタイヤタイプの色
-  };
+    wind: "#00ff00" // 新しいタイヤの色
+    };
 
-  ctx.fillStyle = tireColors[material] || "#000000";
-  
-  // タイヤを描画
-  ctx.beginPath();
-  ctx.arc(x + 10, y + 15, 8, 0, Math.PI * 2);
-  ctx.fill();
+  return colors[material] || "black";
+}
 
-  ctx.beginPath();
-  ctx.arc(x + 50, y + 15, 8, 0, Math.PI * 2);
-  ctx.fill();
+// 初期設定
+function init() {
+  const tireSelect = document.getElementById('tire-select');
+  const wheelSelect = document.getElementById('wheel-select');
+
+  // タイヤの選択肢を追加
+  Object.keys(getTireColor()).forEach(material => {
+    const option = document.createElement('option');
+    option.value = material;
+    option.textContent = material;
+    tireSelect.appendChild(option);
+  });
+
+  // ホイールの選択肢を追加
+  ['standard', 'racing', 'offroad'].forEach(wheel => {
+    const option = document.createElement('option');
+    option.value = wheel;
+    option.textContent = wheel;
+    wheelSelect.appendChild(option);
+  });
+
+  document.getElementById('start-race').addEventListener('click', startRace);
+  document.getElementById('boost-toggle').addEventListener('click', toggleBoost);
+  document.getElementById('view-change').addEventListener('click', changeView);
+  document.getElementById('apply-customization').addEventListener('click', applyCustomization);
 }
 
 // 初期化
-function init() {
-  document.getElementById('start-button').addEventListener('click', startRace);
-  document.getElementById('boost-button').addEventListener('click', toggleBoost);
-  document.getElementById('view-button').addEventListener('click', changeView);
-  document.getElementById('apply-button').addEventListener('click', applyCustomization);
-}
-
 init();
