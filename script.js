@@ -20,7 +20,7 @@ const cpuCars = [
   { x: 100, y: 50, speed: 0, material: "hiepita" },
   { x: 100, y: 150, speed: 0, material: "ice" },
   { x: 100, y: 250, speed: 0, material: "hard" },
-  { x: 100, y: 350, speed: 0, material: "wind" } // 新しいタイヤタイプ
+  { x: 100, y: 350, speed: 0, material: "wind" } // 追加したタイヤタイプ
 ];
 
 // タイヤの特性とホイール設定を適用する
@@ -54,6 +54,12 @@ function toggleBoost() {
 function changeView() {
   viewAngle = (viewAngle + 1) % 4; // 0, 1, 2, 3 の視点を循環
   drawScene();
+}
+
+// タイヤの耐久度を補充する
+function refillTires() {
+  tireDurability = 100; // タイヤの耐久度を最大にリセット
+  alert("タイヤの耐久度を補充しました");
 }
 
 // レースの更新
@@ -103,7 +109,7 @@ function updateCpuCars() {
   });
 }
 
-// タイヤの速度を取得
+// タイヤ素材による速度変動
 function getTireSpeed(material) {
   const baseSpeeds = {
     hiepita: 3,
@@ -115,17 +121,11 @@ function getTireSpeed(material) {
     offroad: 3.5,
     grip: 3.2,
     mystic: 3,
-    rain: 4,
-    wind: 7 // 新しいタイヤタイプ
+    wind: 8,
+    rain: 4
   };
 
-  let speed = baseSpeeds[material] || 3; // デフォルトの速度
-  
-  // ランダム変動
-  const randomFactor = Math.random() * 0.5 - 0.25;
-  speed += randomFactor;
-  
-  return speed;
+  return baseSpeeds[material] || 3; // デフォルトの速度
 }
 
 // シーンを描画
@@ -237,23 +237,42 @@ function drawTires(x, y, material) {
   const tireColors = {
     hiepita: "#a4c2f4",
     ice: "#add8e6",
-    hard: "#d3d3d3",
-    void: "#000000",
-    spike: "#ff0000",
-    aero: "#00ff00",
-    offroad: "#a0522d",
-    grip: "#ff69b4",
+    hard: "#333333",
+    void: "#ff69b4",
+    spike: "#ff4500",
+    aero: "#00bfff",
+    offroad: "#006400",
+    grip: "#d3d3d3",
     mystic: "#8a2be2",
-    rain: "#4682b4",
-    wind: "#f0f8ff" // 新しいタイヤタイプ
+    wind: "#f4f4f4",
+    rain: "#4682b4"
   };
 
-  const tireColor = tireColors[material] || "#000000";
-  
-  // タイヤの描画
-  ctx.fillStyle = tireColor;
+  const wheelColors = {
+    standard: "#666666",
+    custom: "#000000"
+  };
+
+  ctx.fillStyle = wheelColors[tireSettings.wheel];
   ctx.beginPath();
-  ctx.arc(x + 10, y + 10, 10, 0, Math.PI * 2); // 左タイヤ
-  ctx.arc(x + 50, y + 10, 10, 0, Math.PI * 2); // 右タイヤ
+  ctx.arc(x + 5, y + 20, 10, 0, 2 * Math.PI); // 前輪のホイール
+  ctx.arc(x + 55, y + 20, 10, 0, 2 * Math.PI); // 後輪のホイール
+  ctx.fill();
+
+  ctx.fillStyle = tireColors[material];
+  ctx.beginPath();
+  ctx.arc(x + 5, y + 20, 8, 0, 2 * Math.PI); // 前輪のタイヤ
+  ctx.arc(x + 55, y + 20, 8, 0, 2 * Math.PI); // 後輪のタイヤ
   ctx.fill();
 }
+
+// 初期化
+function init() {
+  document.getElementById('start-button').addEventListener('click', startRace);
+  document.getElementById('boost-button').addEventListener('click', toggleBoost);
+  document.getElementById('view-button').addEventListener('click', changeView);
+  document.getElementById('apply-button').addEventListener('click', applyCustomization);
+  document.getElementById('refill-button').addEventListener('click', refillTires); // タイヤ補充ボタンの追加
+}
+
+init();
